@@ -20,6 +20,11 @@ export const YourDocuments: React.FC<{ senderAddress: string, contract: Contract
         return formatTime(Number(date))
     }
 
+    async function update() {
+        await getContract();
+        fetchBalance(senderAddress);
+    }
+
     const deleteDocument = (doc: any) => {
         let docName = getName(doc)
         setActiveDoc(docName)
@@ -28,8 +33,9 @@ export const YourDocuments: React.FC<{ senderAddress: string, contract: Contract
         deleteDoc(senderAddress, key)
             .then(() => {
                 toast.success(`${docName} deleted successfully`);
-                getContract()
-                fetchBalance(senderAddress)
+                setTimeout(() => {
+                    update();
+                }, 3000);
             }).catch(error => {
                 console.log({ error });
                 toast.error(`Failed to delete ${docName}`);

@@ -43,7 +43,7 @@ export const Home: React.FC<{ senderAddress: string, contract: Contract, getCont
 					</li>
 					<li>
 						Contract <b className="fw-bold">address</b> (on Algo testnet):{" "}
-						<a href={`https://testnet.algoexplorer.io/address/${contract.appAddress}`} id="contractLink" target="_blank" rel="noreferrer">
+						<a href={`https://testnet.algoexplorer.io/application/${contract.appId}`} id="contractLink" target="_blank" rel="noreferrer">
 							{" "}
 							{truncateAddress(contract.appAddress)}
 						</a>

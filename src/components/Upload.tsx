@@ -25,13 +25,19 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 		reader.readAsBinaryString(file);
 	}
 
+	async function update() {
+		await getContract();
+		fetchBalance(senderAddress);
+	}
+
 	const optIn = async () => {
 		setLoading(true);
 		registry.optIn(senderAddress)
 			.then(() => {
 				toast.success(`Opt in successfull`);
-				getContract()
-				fetchBalance(senderAddress)
+				setTimeout(() => {
+					update();
+				}, 3000);
 			}).catch(error => {
 				console.log({ error });
 				toast.error("Failed to opt in");
@@ -45,8 +51,9 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 		registry.addDoc(senderAddress, doc, contract)
 			.then(() => {
 				toast.success(`Document ${hash.toString().slice(0, 10)} added successfully.`);
-				getContract()
-				fetchBalance(senderAddress)
+				setTimeout(() => {
+					update();
+				}, 3000);
 			}).catch(error => {
 				console.log({ error });
 				toast.error("Failed to add Document to registry.");
@@ -61,8 +68,7 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 		registry.checkDoc(senderAddress, doc, contract)
 			.then(() => {
 				toast.success(`Document ${hash.toString().slice(0, 10)} is valid.`);
-				getContract()
-				fetchBalance(senderAddress)
+				fetchBalance(senderAddress);
 			}).catch(error => {
 				console.log({ error });
 				toast.error(`Document ${hash.toString().slice(0, 10)} is not valid.`);

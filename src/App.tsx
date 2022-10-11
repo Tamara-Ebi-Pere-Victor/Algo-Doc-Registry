@@ -65,7 +65,13 @@ function App() {
 	}, [address]);
 
 	useEffect(() => {
-		getContract();
+		let isTemplate = true;
+		if (isTemplate) {
+			getContract();
+		}
+		return () => {
+			isTemplate = false;
+		};
 	}, [getContract]);
 
 	if (loading) return (<Loader />)
