@@ -16,13 +16,15 @@ import { Verify } from "./pages/Verify"
 import { YourDocuments } from "./pages/YourDocuments"
 import { Contract, getContractData } from "./utils/registry";
 import { contractTemplate } from "./utils/constants"
+import Loader from "./components/Loader"
 
 
 function App() {
 	const [address, setAddress] = useState("");
 	const [name, setName] = useState("");
 	const [balance, setBalance] = useState(0);
-	const [contract, setContract] = useState<Contract>(contractTemplate)
+	const [contract, setContract] = useState<Contract>(contractTemplate);
+	const [loading, setLoading] = useState(false);
 
 	const fetchBalance = async (accountAddress: string) => {
 		indexerClient.lookupAccountByID(accountAddress).do()
@@ -56,13 +58,18 @@ function App() {
 
 	const getContract = useCallback(async () => {
 		if (address) {
+			setLoading(true)
 			setContract(await getContractData(address));
+			setLoading(false)
 		}
 	}, [address]);
 
 	useEffect(() => {
 		getContract();
 	}, [getContract]);
+
+	if (loading) return (<Loader />)
+
 	return (
 		<>
 			<Notification />
@@ -81,10 +88,10 @@ function App() {
 						</Nav.Item>
 					</Nav>
 					<Routes>
-						<Route element={<Home senderAddress={address} contract={contract} />} path="/" />
-						<Route element={<Submit senderAddress={address} contract={contract} />} path="/submit-document" />
-						<Route element={<Verify senderAddress={address} contract={contract} />} path="/verify-document" />
-						<Route element={<YourDocuments senderAddress={address} contract={contract} />} path="/your-documents" />
+						<Route element={<Home senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/" />
+						<Route element={<Submit senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/submit-document" />
+						<Route element={<Verify senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/verify-document" />
+						<Route element={<YourDocuments senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/your-documents" />
 					</Routes>
 					<Footer />
 				</main>

@@ -32,12 +32,12 @@ export const stringToMicroAlgos = (str: string) => {
   return algosdk.algosToMicroalgos(Number(str));
 };
 
-export const convertTime = (secs: number) => {
+export const formatTime = (secs: number) => {
   if (secs === 0) {
     return "--";
   }
 
-  let dateObj = new Date(secs * 1000);
+  let dateObj = new Date(secs);
 
   let date = dateObj.toLocaleDateString("en-us", {
     weekday: "short",

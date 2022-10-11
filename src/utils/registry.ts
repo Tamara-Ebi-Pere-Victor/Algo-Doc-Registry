@@ -1,14 +1,11 @@
 import algosdk from "algosdk";
 import * as algo from "./constants";
-import { keccak256 } from "js-sha3"
 /* eslint import/no-webpack-loader-syntax: off */
 import approvalProgram from "!!raw-loader!../contracts/document_registry_approval.teal";
 import clearProgram from "!!raw-loader!../contracts/document_registry_clear.teal";
-import { base64ToUTF8String, utf8ToBase64String } from "./conversions";
 
 export interface Doc {
     name: string;
-    dateAdded: string;
     hash: string;
 }
 
@@ -16,8 +13,9 @@ export interface Contract {
     appId: number;
     appAddress: string;
     creatorAddress: string;
+    userOptedIn: boolean;
     totalDocument: number;
-    userDocuments: string[];
+    userDocuments: any[];
 }
 
 // Compile smart contract in .teal format to program
@@ -81,9 +79,56 @@ export const createContract = async (senderAddress: string) => {
     return appId;
 };
 
+// OPT-IN: opt_in_call
+export const optIn = async (senderAddress: string) => {
+    console.log("Opting in to contract......");
+
+    if (algo.appId === Number(0)) return
+
+    let params = await algo.algodClient.getTransactionParams().do();
+
+    // Create ApplicationOptIn Transaction
+    let txn = algosdk.makeApplicationOptInTxnFromObject({
+        from: senderAddress,
+        suggestedParams: params,
+        appIndex: algo.appId,
+    });
+
+    // Get transaction ID
+    let txId = txn.txID().toString();
+
+    // Sign & submit the transaction
+    let signedTxn = await algo.myAlgoConnect.signTransaction(txn.toByte());
+    console.log("Signed transaction with txID: %s", txId);
+    await algo.algodClient.sendRawTransaction(signedTxn.blob).do();
+
+    // Wait for transaction to be confirmed
+    const confirmedTxn = await algosdk.waitForConfirmation(
+        algo.algodClient,
+        txId,
+        4
+    );
+
+    // Get the completed Transaction
+    console.log(
+        "Transaction " +
+        txId +
+        " confirmed in round " +
+        confirmedTxn["confirmed-round"]
+    );
+    // display results
+    let transactionResponse = await algo.algodClient
+        .pendingTransactionInformation(txId)
+        .do();
+    console.log("Opted-in to app-id:", transactionResponse["txn"]["txn"]["apid"]);
+};
+
 // ADD DOCUMENT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const addDoc = async (senderAddress: string, doc: Doc, contract: Contract) => {
     console.log("Adding document...");
+
+    if (algo.appId === Number(0)) return
+
     let params = await algo.algodClient.getTransactionParams().do();
 
     // Build required app args as Uint8Array
@@ -140,6 +185,9 @@ export const addDoc = async (senderAddress: string, doc: Doc, contract: Contract
 // CHECK DOCUMENT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const checkDoc = async (senderAddress: string, doc: Doc, contract: Contract) => {
     console.log("Checking document...");
+
+    if (algo.appId === Number(0)) return
+
     let params = await algo.algodClient.getTransactionParams().do();
 
     // Build required app args as Uint8Array
@@ -192,13 +240,16 @@ export const checkDoc = async (senderAddress: string, doc: Doc, contract: Contra
 };
 
 // DELETING DOCUMENT:  ApplicationCallTxn
-export const deleteDoc = async (senderAddress: string, docName: string) => {
+export const deleteDoc = async (senderAddress: string, key: string) => {
     console.log("Deleting document...");
+
+    if (algo.appId === Number(0)) return
+
     let params = await algo.algodClient.getTransactionParams().do();
 
     // Build required app args as Uint8Array
     let deleteArg = new TextEncoder().encode("delete");
-    let name = new TextEncoder().encode(docName);
+    let name = new TextEncoder().encode(key);
     let appArgs = [deleteArg, name];
 
     // Create ApplicationCallTxn
@@ -233,6 +284,8 @@ export const deleteDoc = async (senderAddress: string, docName: string) => {
 // DELETE Contract:
 export const deleteContract = async (senderAddress: string) => {
     console.log("Deleting application");
+
+    if (algo.appId === Number(0)) return
 
     let params = await algo.algodClient.getTransactionParams().do();
 
@@ -275,9 +328,12 @@ export const deleteContract = async (senderAddress: string) => {
 };
 
 export const getContractData = async (senderAddress: string) => {
+
     console.log("Getting Registry Data...");
 
     let contract: Contract = algo.contractTemplate;
+
+    if (algo.appId === Number(0)) return contract
 
     // Step 2: Get Registry application by application id
     let contract_ = await getApplication(algo.appId, senderAddress);
@@ -304,10 +360,13 @@ const getApplication = async (appId: number, senderAddress: string) => {
         // 2. Parse fields of response and return proposal
         let appAddress = algosdk.getApplicationAddress(appId);
         let creatorAddress = response.application.params.creator;
+        let userOptedIn = false;
         let totalDocument = 0;
-        let userDocuments: string[] = [];
+        let userDocuments = [];
 
-        console.log(globalState);
+        if (globalState) {
+            totalDocument = globalState.length
+        }
 
         let userInfo = await algo.indexerClient
             .lookupAccountAppLocalStates(senderAddress)
@@ -316,24 +375,19 @@ const getApplication = async (appId: number, senderAddress: string) => {
         let appLocalState = userInfo["apps-local-states"];
         for (let i = 0; i < appLocalState.length; i++) {
             if (appId === appLocalState[i]["id"]) {
-                let localState = appLocalState[i]["key-value"];
-                console.log(localState)
+                userOptedIn = true;
+                userDocuments = appLocalState[i]["key-value"];
             }
         }
         return {
             appId,
             appAddress,
             creatorAddress,
+            userOptedIn,
             totalDocument,
             userDocuments,
         };
     } catch (err) {
         return null;
     }
-};
-
-export const getField = (fieldName: string, State: any) => {
-    return State.find((state: any) => {
-        return state.key === utf8ToBase64String(fieldName);
-    });
 };

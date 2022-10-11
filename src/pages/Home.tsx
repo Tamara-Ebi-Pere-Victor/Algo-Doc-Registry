@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { Contract, createContract } from "../utils/registry";
 import { truncateAddress } from "../utils/conversions";
 
-export const Home: React.FC<{ senderAddress: string, contract: Contract }> = ({ senderAddress, contract }) => {
+export const Home: React.FC<{ senderAddress: string, contract: Contract, getContract: Function, fetchBalance: Function }> = ({ senderAddress, contract, getContract, fetchBalance }) => {
 	const [loading, setLoading] = useState(false);
 
 	const deployContract = async () => {
@@ -12,6 +12,8 @@ export const Home: React.FC<{ senderAddress: string, contract: Contract }> = ({ 
 		await createContract(senderAddress)
 			.then(() => {
 				toast.success(`Contract created successfully`);
+				getContract();
+				fetchBalance(senderAddress);
 			})
 			.catch((error) => {
 				console.log(error);
@@ -25,7 +27,7 @@ export const Home: React.FC<{ senderAddress: string, contract: Contract }> = ({ 
 			<section id="viewHome" className="my-5">
 				<h1>Document Registry</h1>
 				Welcome to the "Document Registry" DApp. This decentralized app runs on
-				the Near Protocol network and holds a registry of documents in on chain.
+				the Algorand Blockchain network and holds a registry of documents in on chain.
 				<ul>
 					<li>
 						The registry keeps the hashes of the documents along with their
@@ -56,7 +58,7 @@ export const Home: React.FC<{ senderAddress: string, contract: Contract }> = ({ 
 						Documents
 					</li>
 				</ul>
-				{contract.appId ? (
+				{contract.appId === 0 ? (
 					<Button variant="success" id="Button" onClick={() => deployContract()}>
 						{loading ?
 							(<>
