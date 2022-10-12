@@ -29,15 +29,17 @@ export const YourDocuments: React.FC<{ senderAddress: string, contract: Contract
         let docName = getName(doc)
         setActiveDoc(docName)
         setLoading(true);
+        toast.loading(`Deleting ${docName} from registry`)
         let key = base64ToUTF8String(doc["key"])
         deleteDoc(senderAddress, key)
             .then(() => {
+                toast.dismiss()
                 toast.success(`${docName} deleted successfully`);
                 setTimeout(() => {
                     update();
-                }, 3000);
+                }, 2000);
             }).catch(error => {
-                console.log({ error });
+                toast.dismiss()
                 toast.error(`Failed to delete ${docName}`);
             }).finally(() => {
                 setLoading(false);

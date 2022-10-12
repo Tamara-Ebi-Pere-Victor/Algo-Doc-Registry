@@ -4,19 +4,21 @@ import { toast } from "react-toastify";
 import { Contract, createContract } from "../utils/registry";
 import { truncateAddress } from "../utils/conversions";
 
-export const Home: React.FC<{ senderAddress: string, contract: Contract, getContract: Function, fetchBalance: Function }> = ({ senderAddress, contract, getContract, fetchBalance }) => {
+export const Home: React.FC<{ senderAddress: string, contract: Contract, fetchBalance: Function }> = ({ senderAddress, contract, fetchBalance }) => {
 	const [loading, setLoading] = useState(false);
 
 	const deployContract = async () => {
+		toast.loading(`Deploying new Registry`)
 		setLoading(true)
 		await createContract(senderAddress)
 			.then(() => {
+				toast.dismiss();
 				toast.success(`Contract created successfully`);
-				getContract();
-				fetchBalance(senderAddress);
+				fetchBalance(senderAddress)
 			})
 			.catch((error) => {
 				console.log(error);
+				toast.dismiss()
 				toast.error("Failed to create contract.");
 			});
 		setLoading(false);

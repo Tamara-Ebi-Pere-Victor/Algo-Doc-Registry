@@ -34,31 +34,31 @@ int 2
 &&
 assert
 txna ApplicationArgs 1
-store 7
+store 9
 txna Accounts 0
 txna Applications 0
-load 7
+load 9
 app_local_get_ex
+store 14
+store 13
+load 14
+assert
+load 13
+store 10
+txna Applications 0
+load 10
+app_global_get_ex
 store 12
 store 11
 load 12
-assert
-load 11
-store 8
-txna Applications 0
-load 8
-app_global_get_ex
-store 10
-store 9
-load 10
 bnz main_l9
 int 0
 return
 main_l9:
-load 8
+load 10
 app_global_del
 txna Accounts 0
-load 7
+load 9
 app_local_del
 int 1
 return
@@ -93,13 +93,13 @@ gtxn 0 Sender
 assert
 txna ApplicationArgs 1
 keccak256
-store 4
-txna Applications 0
-load 4
-app_global_get_ex
 store 6
-store 5
+txna Applications 0
 load 6
+app_global_get_ex
+store 8
+store 7
+load 8
 bnz main_l12
 int 0
 return
@@ -150,8 +150,16 @@ store 2
 txna ApplicationArgs 2
 keccak256
 store 0
+txna Applications 0
+load 0
+app_global_get_ex
+store 5
+store 4
+load 5
+!
 load 3
 !
+&&
 bnz main_l15
 int 0
 return
@@ -175,6 +183,6 @@ txn Sender
 return
 main_l18:
 txn Note
-byte "docregistry:uv01"
+byte "docregistry:uv02"
 ==
 return

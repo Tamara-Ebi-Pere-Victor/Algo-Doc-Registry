@@ -32,14 +32,16 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 
 	const optIn = async () => {
 		setLoading(true);
+		toast.loading(`Opting in to Registry`)
 		registry.optIn(senderAddress)
 			.then(() => {
+				toast.dismiss()
 				toast.success(`Opt in successfull`);
 				setTimeout(() => {
 					update();
-				}, 3000);
+				}, 2000);
 			}).catch(error => {
-				console.log({ error });
+				toast.dismiss()
 				toast.error("Failed to opt in");
 			}).finally(() => {
 				setLoading(false);
@@ -48,15 +50,21 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 
 	const addDocument = async (doc: registry.Doc) => {
 		setLoading(true);
+		toast.loading(`Adding Document ${hash.toString().slice(0, 10)} to registry`)
 		registry.addDoc(senderAddress, doc, contract)
 			.then(() => {
+				toast.dismiss()
 				toast.success(`Document ${hash.toString().slice(0, 10)} added successfully.`);
 				setTimeout(() => {
 					update();
-				}, 3000);
+				}, 2000);
 			}).catch(error => {
-				console.log({ error });
-				toast.error("Failed to add Document to registry.");
+				toast.dismiss()
+				if (error.message.slice(-39) === "transaction rejected by ApprovalProgram") {
+					toast.error(`Document ${hash.toString().slice(0, 10)} already exists on registry.`);
+				} else {
+					toast.error(`${error.message}`)
+				}
 			}).finally(() => {
 				setLoading(false);
 			});
@@ -64,14 +72,20 @@ export const Upload: React.FC<{ id: string, senderAddress: string, contract: reg
 
 
 	const verifyDocument = async (doc: registry.Doc) => {
+		toast.loading(`Checking registry for document ${hash.toString().slice(0, 10)}`)
 		setLoading(true);
 		registry.checkDoc(senderAddress, doc, contract)
 			.then(() => {
+				toast.dismiss()
 				toast.success(`Document ${hash.toString().slice(0, 10)} is valid.`);
 				fetchBalance(senderAddress);
 			}).catch(error => {
-				console.log({ error });
-				toast.error(`Document ${hash.toString().slice(0, 10)} is not valid.`);
+				toast.dismiss()
+				if (error.message.slice(-39) === "transaction rejected by ApprovalProgram") {
+					toast.error(`Document ${hash.toString().slice(0, 10)} is not valid.`);
+				} else {
+					toast.error(`${error.message}`)
+				}
 			}).finally(() => {
 				setLoading(false);
 			});
