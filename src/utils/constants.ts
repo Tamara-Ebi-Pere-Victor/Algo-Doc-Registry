@@ -28,7 +28,7 @@ export const myAlgoConnect = new MyAlgoConnect();
 export const minRound = 21540981;
 
 // https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0002.md
-export const docRegistryNote = "docregistry:uv01";
+export const docRegistryNote = "docregistry:uv02";
 
 // Maximum local storage allocation, immutable
 export const numLocalInts = 0;
@@ -43,7 +43,7 @@ export const numGlobalBytes = 0;
 // Global variables stored as Bytes = 0
 
 // App ID
-export const appId = 115736745;
+export const appId = 115858618;
 
 export const contractTemplate: Contract = {
   appId: 0,

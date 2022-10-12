@@ -14,7 +14,7 @@ class Document_Registry:
         delete_doc = Bytes("delete")
 
     def application_creation(self):
-        return Return(Txn.note() == Bytes("docregistry:uv01"))
+        return Return(Txn.note() == Bytes("docregistry:uv02"))
 
     def opt_in(self):
         return Approve()
@@ -25,6 +25,8 @@ class Document_Registry:
         check_user_storage = App.localGetEx(
             Txn.accounts[0], Txn.applications[0], doc_name.load()
         )
+        check_global_state = App.globalGetEx(
+            Txn.applications[0], doc_key.load())
         return Seq([
             Assert(
                 And(
@@ -53,8 +55,16 @@ class Document_Registry:
             # rehash the documents hash.
             doc_key.store(Keccak256(Txn.application_args[2])),
 
+            # check global state
+            check_global_state,
+
             # store in global state if name does not exist
-            If(Not(check_user_storage.hasValue()))
+            If(
+                And(
+                    Not(check_global_state.hasValue()),
+                    Not(check_user_storage.hasValue())
+                )
+            )
             .Then(
                 # store document name as key and hash in creator localstorage
                 App.localPut(Txn.accounts[0], doc_name.load(), doc_key.load()),

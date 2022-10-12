@@ -4,6 +4,7 @@ import "./App.css"
 import { Header } from "./components/Header"
 import { Nav } from "react-bootstrap"
 import { Route, Routes } from "react-router-dom"
+import { toast } from "react-toastify";
 import { indexerClient, myAlgoConnect } from "./utils/constants";
 import Wallet from "./components/Wallet"
 import coverImg from "./assets/img/registry.jpeg";
@@ -58,9 +59,11 @@ function App() {
 
 	const getContract = useCallback(async () => {
 		if (address) {
+			toast.loading(`Updating Registry`)
 			setLoading(true)
 			setContract(await getContractData(address));
 			setLoading(false)
+			toast.dismiss()
 		}
 	}, [address]);
 
@@ -74,33 +77,33 @@ function App() {
 		};
 	}, [getContract]);
 
-	if (loading) return (<Loader />)
-
 	return (
 		<>
 			<Notification />
 			{address ? (
-				<main className="container-fluid">
-					<Header></Header>
-					<Nav className="justify-content-end pt-3 pb-5">
-						<Nav.Item>
-							<Wallet
-								address={address}
-								name={name}
-								amount={balance}
-								symbol="NEAR"
-								disconnect={disconnect}
-							/>
-						</Nav.Item>
-					</Nav>
-					<Routes>
-						<Route element={<Home senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/" />
-						<Route element={<Submit senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/submit-document" />
-						<Route element={<Verify senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/verify-document" />
-						<Route element={<YourDocuments senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/your-documents" />
-					</Routes>
-					<Footer />
-				</main>
+				!loading ? (
+					<main className="container-fluid">
+						<Header></Header>
+						<Nav className="justify-content-end pt-3 pb-5">
+							<Nav.Item>
+								<Wallet
+									address={address}
+									name={name}
+									amount={balance}
+									symbol="NEAR"
+									disconnect={disconnect}
+								/>
+							</Nav.Item>
+						</Nav>
+						<Routes>
+							<Route element={<Home senderAddress={address} contract={contract} fetchBalance={fetchBalance} />} path="/" />
+							<Route element={<Submit senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/submit-document" />
+							<Route element={<Verify senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/verify-document" />
+							<Route element={<YourDocuments senderAddress={address} contract={contract} getContract={getContract} fetchBalance={fetchBalance} />} path="/your-documents" />
+						</Routes>
+						<Footer />
+					</main>
+				) : <Loader />
 			) : (
 				<Cover name="Document Registry" login={connectWallet} coverImg={coverImg} />
 			)}
