@@ -28,7 +28,7 @@ const compileProgram = async (programSource: any) => {
 
 // CREATE Contract: ApplicationCreateTxn
 export const createContract = async (senderAddress: string) => {
-    console.log("Deploying new doc reg application...");
+    
     let params = await algo.algodClient.getTransactionParams().do();
     // Compile programs
     const compiledApprovalProgram = await compileProgram(approvalProgram);
@@ -56,33 +56,27 @@ export const createContract = async (senderAddress: string) => {
 
     // Sign & submit the transaction
     let signedTxn = await algo.myAlgoConnect.signTransaction(txn.toByte());
-    console.log("Signed transaction with txID: %s", txId);
+    
     await algo.algodClient.sendRawTransaction(signedTxn.blob).do();
 
     // Wait for transaction to be confirmed
     let confirmedTxn = await algosdk.waitForConfirmation(algo.algodClient, txId, 4);
 
     // Get the completed Transaction
-    console.log(
-        "Transaction " +
-        txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
 
     // Get created application id and notify about completion
     let transactionResponse = await algo.algodClient
         .pendingTransactionInformation(txId)
         .do();
     let appId = transactionResponse["application-index"];
-    console.log("Created new app-id: ", appId);
+    
     return appId;
 };
 
 // OPT-IN: opt_in_call
 export const optIn = async (senderAddress: string) => {
-    console.log("Opting in to contract......");
-
+    
     if (algo.appId === Number(0)) return
 
     let params = await algo.algodClient.getTransactionParams().do();
@@ -99,7 +93,7 @@ export const optIn = async (senderAddress: string) => {
 
     // Sign & submit the transaction
     let signedTxn = await algo.myAlgoConnect.signTransaction(txn.toByte());
-    console.log("Signed transaction with txID: %s", txId);
+    
     await algo.algodClient.sendRawTransaction(signedTxn.blob).do();
 
     // Wait for transaction to be confirmed
@@ -110,22 +104,17 @@ export const optIn = async (senderAddress: string) => {
     );
 
     // Get the completed Transaction
-    console.log(
-        "Transaction " +
-        txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
     // display results
     let transactionResponse = await algo.algodClient
         .pendingTransactionInformation(txId)
         .do();
-    console.log("Opted-in to app-id:", transactionResponse["txn"]["txn"]["apid"]);
+    
 };
 
 // ADD DOCUMENT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const addDoc = async (senderAddress: string, doc: Doc, contract: Contract) => {
-    console.log("Adding document...");
+    
 
     if (algo.appId === Number(0)) return
 
@@ -164,7 +153,7 @@ export const addDoc = async (senderAddress: string, doc: Doc, contract: Contract
     let signedTxn = await algo.myAlgoConnect.signTransaction(
         txnArray.map((txn) => txn.toByte())
     );
-    console.log("Signed group transaction");
+    
     let tx = await algo.algodClient
         .sendRawTransaction(signedTxn.map((txn) => txn.blob))
         .do();
@@ -173,18 +162,13 @@ export const addDoc = async (senderAddress: string, doc: Doc, contract: Contract
     let confirmedTxn = await algosdk.waitForConfirmation(algo.algodClient, tx.txId, 4);
 
     // Notify about completion
-    console.log(
-        "Group transaction " +
-        tx.txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
 };
 
 
 // CHECK DOCUMENT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const checkDoc = async (senderAddress: string, doc: Doc, contract: Contract) => {
-    console.log("Checking document...");
+    
 
     if (algo.appId === Number(0)) return
 
@@ -222,7 +206,7 @@ export const checkDoc = async (senderAddress: string, doc: Doc, contract: Contra
     let signedTxn = await algo.myAlgoConnect.signTransaction(
         txnArray.map((txn) => txn.toByte())
     );
-    console.log("Signed group transaction");
+    
     let tx = await algo.algodClient
         .sendRawTransaction(signedTxn.map((txn) => txn.blob))
         .do();
@@ -231,17 +215,12 @@ export const checkDoc = async (senderAddress: string, doc: Doc, contract: Contra
     let confirmedTxn = await algosdk.waitForConfirmation(algo.algodClient, tx.txId, 4);
 
     // Notify about completion
-    console.log(
-        "Group transaction " +
-        tx.txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
 };
 
 // DELETING DOCUMENT:  ApplicationCallTxn
 export const deleteDoc = async (senderAddress: string, key: string) => {
-    console.log("Deleting document...");
+    
 
     if (algo.appId === Number(0)) return
 
@@ -266,24 +245,19 @@ export const deleteDoc = async (senderAddress: string, key: string) => {
 
     // Sign & submit the transaction
     let signedTxn = await algo.myAlgoConnect.signTransaction(appCallTxn.toByte());
-    console.log("Signed transaction with txID: %s", txId);
+    
     await algo.algodClient.sendRawTransaction(signedTxn.blob).do();
 
     // Wait for group transaction to be confirmed
     let confirmedTxn = await algosdk.waitForConfirmation(algo.algodClient, txId, 4);
 
     // Notify about completion
-    console.log(
-        "Group transaction " +
-        txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
 };
 
 // DELETE Contract:
 export const deleteContract = async (senderAddress: string) => {
-    console.log("Deleting application");
+    
 
     if (algo.appId === Number(0)) return
 
@@ -301,7 +275,7 @@ export const deleteContract = async (senderAddress: string) => {
 
     // Sign & submit the transaction
     let signedTxn = await algo.myAlgoConnect.signTransaction(txn.toByte());
-    console.log("Signed transaction with txID: %s", txId);
+    
     await algo.algodClient.sendRawTransaction(signedTxn.blob).do();
 
     // Wait for transaction to be confirmed
@@ -312,24 +286,19 @@ export const deleteContract = async (senderAddress: string) => {
     );
 
     // Get the completed Transaction
-    console.log(
-        "Transaction " +
-        txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
+    
 
     // Get application id of deleted application and notify about completion
     let transactionResponse = await algo.algodClient
         .pendingTransactionInformation(txId)
         .do();
     let appId = transactionResponse["txn"]["txn"].apid;
-    console.log("Deleted app-id: ", appId);
+    
 };
 
 export const getContractData = async (senderAddress: string) => {
 
-    console.log("Getting Registry Data...");
+    
 
     let contract: Contract = algo.contractTemplate;
 
@@ -341,7 +310,7 @@ export const getContractData = async (senderAddress: string) => {
     if (contract_) {
         contract = contract_;
     }
-    console.log("Registry data Fetched...");
+    
     return contract;
 };
 
